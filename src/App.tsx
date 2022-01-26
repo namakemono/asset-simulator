@@ -22,6 +22,7 @@ interface Props {
     years: number; // あと何年働くか
     invest: number; // 年間投資額(万円)
     emergency: number; // 生活防衛費(万円)
+    ratio: number; // 債権の保有率
 }
 
 interface Result {
@@ -62,19 +63,16 @@ const simulate = (props: Props): Result => {
                 y += 100;
             }
         }
-        // 投資 or 切り崩し
-        if (y < 0.2 * (x+y)) { // 債権の割合が20%を切っている
+        // 債権と株式のバランス調整
+        if (y < w + p) {
             y += p;
             x -= p;
-        } else if (x > 0.8 * (x+y)) { // 株式持ちすぎ
+        } else if (y < props.ratio * (x+y)) { // 債権の割合が20%を切っている
+            y += p;
+            x -= p;
+        } else { // 株式持ちすぎ
             y -= p;
             x += p;
-        } else if (y >= w + s) { // 現金に余裕があるので投資
-            y -= s;
-            x += s;
-        } else { // 生活防衛費が削られてる状況
-            y += p;
-            x -= p;
         }
         // 毎年の支出
         if (y > w + p) {
@@ -118,9 +116,10 @@ const App = () => {
     const [years, setYears] = React.useState<number>(20);           // あと何年働きたい?
     const [money, setMoney] = React.useState<number>(300);          // 現在の預金額(万円)
     const [value, setValue] = React.useState<number>(1000);         // 初期投資額
-    const [mu, setMu] = React.useState<number>(0.08);              // リターン
-    const [sigma, setSigma] = React.useState<number>(0.2);         // リスク
+    const [mu, setMu] = React.useState<number>(0.07);              // リターン
+    const [sigma, setSigma] = React.useState<number>(0.15);         // リスク
     const [emergency, setEmergency] = React.useState<number>(300);  // 生活防衛資金(万円)
+    const [ratio, setRatio] = React.useState<number>(0.2);          // 預金の割合
     let results = [];
     for (let k = 0; k < 1000; ++k) {
         results.push(simulate({
@@ -134,13 +133,14 @@ const App = () => {
             years,          // あと何年働くか
             invest,         // 年間投資額(万円)
             emergency,      // 生活防衛費(万円)
+            ratio           // 預金の割合
         }));
     }
     const result = results[0];
     const winRatio = calcWinRatio(results);
     return (
         <div>
-            
+            <h3>資産運用シミュレーション</h3>
             <div>
                 <span>現在の年齢</span>
                 <span><input type="text"
@@ -162,14 +162,6 @@ const App = () => {
                     onChange={e => setSalary(parse(e.target.value))}
                 ></input>万円</span>
             </div>
-            <div>
-                <span>年間投資額(上限)</span>
-                <span><input type="text"
-                    value={invest}
-                    onChange={e => setInvest(parse(e.target.value))}
-                ></input>万円</span>
-            </div>
-
             <div>
                 <span>生活防衛資金</span>
                 <span><input type="text"
@@ -202,17 +194,24 @@ const App = () => {
                 ></input>万円</span>
             </div>
             <div>
-                <span>リターン</span>
+                <span>リターン(年利)</span>
                 <span><input type="text"
                     value={mu}
                     onChange={e => setMu(parseFloat(e.target.value) || 0.0001)}
                 ></input></span>
             </div>
             <div>
-                <span>リスク</span>
+                <span>リスク(標準偏差)</span>
                 <span><input type="text"
                     value={sigma}
                     onChange={e => setSigma(parseFloat(e.target.value) || 0.0001)}
+                ></input></span>
+            </div>
+            <div>
+                <span>預金の割合</span>
+                <span><input type="text"
+                    value={ratio}
+                    onChange={e => setRatio(parseFloat(e.target.value) || 0.0001)}
                 ></input></span>
             </div>
 
