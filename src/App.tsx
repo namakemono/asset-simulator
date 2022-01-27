@@ -67,18 +67,19 @@ const simulate = (props: Props): Result => {
         if (y < w + p) {
             y += p;
             x -= p;
-        } else if (y < props.ratio * (x+y)) { // 債権の割合が20%を切っている
-            y += p;
-            x -= p;
-        } else { // 株式持ちすぎ
-            y -= p;
-            x += p;
+        } else { // 債権の割合が一定になるよう調整
+            let d = y - props.ratio * (x+y);
+            y -= d;
+            x += d;
         }
         // 毎年の支出
         if (y > w + p) {
             y -= p;
         } else if (x >= p) { // 資産の切り崩し
             x -= p;
+        } else if ((0 < x) && (x < p)) { // 働く必要がある状態
+            y -= x;
+            x = 0;
         } else {
             y -= p;
         }
@@ -115,7 +116,7 @@ const App = () => {
     const [invest, setInvest] = React.useState<number>(150);        // 年間投資額(万円)
     const [years, setYears] = React.useState<number>(20);           // あと何年働きたい?
     const [money, setMoney] = React.useState<number>(300);          // 現在の預金額(万円)
-    const [value, setValue] = React.useState<number>(1000);         // 初期投資額
+    const [value, setValue] = React.useState<number>(500);         // 初期投資額
     const [mu, setMu] = React.useState<number>(0.07);              // リターン
     const [sigma, setSigma] = React.useState<number>(0.15);         // リスク
     const [emergency, setEmergency] = React.useState<number>(300);  // 生活防衛資金(万円)
