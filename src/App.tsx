@@ -210,6 +210,7 @@ const App = () => {
                     value={sigma}
                     onChange={e => setSigma(parseFloat(e.target.value) || 0.0001)}
                 ></input></span>
+                <span>リターンとリスクは『<a href="https://myindex.jp/data_i.php?q=SP1001JPY">myINDEX わたしのインデックス</a>』といった外部サービスを参考に決めてください。</span>
             </div>
             <div>
                 <span>預金の割合</span>
