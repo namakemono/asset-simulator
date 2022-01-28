@@ -20,17 +20,19 @@ interface Props {
     money: number; // 預金額(万円)
     salary: number; // 給料（手取り)
     years: number; // あと何年働くか
-    invest: number; // 年間投資額(万円)
+    goal: number; // 年間投資額(万円)
     emergency: number; // 生活防衛費(万円)
     ratio: number; // 債権の保有率
 }
 
 interface Result {
+    achieved: boolean;
     survived: boolean;
     history: { t: number, age: number, x: number, y: number, r: number }[]
 }
 const simulate = (props: Props): Result => {
     let res: Result = {
+        achieved: false,
         survived: true, // 目標の年数生き延びれたかどうか
         history: []
     };
@@ -39,7 +41,6 @@ const simulate = (props: Props): Result => {
     let p = props.expenditure; // 年間の支出(万円)
     let q = props.salary; // 給料(手取り)
     let w = props.emergency; // 生活防衛費
-    let s = props.invest; // 年間の投資額(万円)
     let mu = props.mu; // リターン(平均)
     let sigma = props.sigma; // リスク(標準偏差)
     let k = props.years; // あと何年働くか(目標金額のほうが良いかも)
@@ -53,9 +54,11 @@ const simulate = (props: Props): Result => {
             break;
         }
         // 給料
-        if (t < k) {
+        if (!res.achieved && (x + y < props.goal)) {
+            // 目標金額達成までは働く
             y += q;
         } else {
+            res.achieved = true;
             // 国民年金(厚生年金) + 健康保険
             if (age < 65) {
                 y -= 30; 
@@ -113,12 +116,12 @@ const App = () => {
     const [age, setAge] = React.useState<number>(25);
     const [expenditure, setExpenditure] = React.useState<number>(250);  // 年間の支出
     const [salary, setSalary] = React.useState<number>(500);        // 年収(手取り)
-    const [invest, setInvest] = React.useState<number>(150);        // 年間投資額(万円)
+    const [goal, setGoal] = React.useState<number>(10000);          // 目標金額(万円)
     const [years, setYears] = React.useState<number>(20);           // あと何年働きたい?
     const [money, setMoney] = React.useState<number>(300);          // 現在の預金額(万円)
     const [value, setValue] = React.useState<number>(500);         // 初期投資額
-    const [mu, setMu] = React.useState<number>(0.07);              // リターン
-    const [sigma, setSigma] = React.useState<number>(0.15);         // リスク
+    const [mu, setMu] = React.useState<number>(0.08);              // リターン
+    const [sigma, setSigma] = React.useState<number>(0.18);         // リスク
     const [emergency, setEmergency] = React.useState<number>(300);  // 生活防衛資金(万円)
     const [ratio, setRatio] = React.useState<number>(0.2);          // 預金の割合
     let results = [];
@@ -132,7 +135,7 @@ const App = () => {
             money,          // 預金額(万円)
             salary,         // 年収（手取り)
             years,          // あと何年働くか
-            invest,         // 年間投資額(万円)
+            goal,           // 年間投資額(万円)
             emergency,      // 生活防衛費(万円)
             ratio           // 預金の割合
         }));
@@ -171,11 +174,11 @@ const App = () => {
                 ></input>万円</span>
             </div>
             <div>
-                <span>あと何年働くか</span>
+                <span>目標金額</span>
                 <span><input type="text"
-                    value={years}
-                    onChange={e => setYears(parse(e.target.value))}
-                ></input>年</span>
+                    value={goal}
+                    onChange={e => setGoal(parse(e.target.value))}
+                ></input>万円</span>
             </div>
 
 
