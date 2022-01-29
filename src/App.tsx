@@ -19,20 +19,21 @@ interface Props {
     sigma: number; // リスク
     money: number; // 預金額(万円)
     salary: number; // 給料（手取り)
-    years: number; // あと何年働くか
     goal: number; // 年間投資額(万円)
     emergency: number; // 生活防衛費(万円)
     ratio: number; // 債権の保有率
 }
 
 interface Result {
-    achieved: boolean;
+    achieved: boolean;  // 目標金額まで貯蓄できたかどうか
+    achievedYears: number; // 目標金額達成年数
     survived: boolean;
     history: { t: number, age: number, x: number, y: number, r: number }[]
 }
 const simulate = (props: Props): Result => {
     let res: Result = {
         achieved: false,
+        achievedYears: -1,
         survived: true, // 目標の年数生き延びれたかどうか
         history: []
     };
@@ -43,7 +44,6 @@ const simulate = (props: Props): Result => {
     let w = props.emergency; // 生活防衛費
     let mu = props.mu; // リターン(平均)
     let sigma = props.sigma; // リスク(標準偏差)
-    let k = props.years; // あと何年働くか(目標金額のほうが良いかも)
     let T = 50; // 何年先までシミュレーションしたいか
 
     for (let t = 0; t < T; ++t) {
@@ -58,7 +58,10 @@ const simulate = (props: Props): Result => {
             // 目標金額達成までは働く
             y += q;
         } else {
-            res.achieved = true;
+            if (!res.achieved) {
+                res.achieved = true;
+                res.achievedYears = t;
+            }
             // 国民年金(厚生年金) + 健康保険
             if (age < 65) {
                 y -= 30; 
@@ -112,12 +115,18 @@ const parse = (x:string):number => {
         return parseInt(x);
     }
 }
+const sum = (v:number[]) => {
+    let res = 0;
+    v.map(x => {
+        res += x;
+    });
+    return res;
+}
 const App = () => {
     const [age, setAge] = React.useState<number>(25);
     const [expenditure, setExpenditure] = React.useState<number>(250);  // 年間の支出
     const [salary, setSalary] = React.useState<number>(500);        // 年収(手取り)
     const [goal, setGoal] = React.useState<number>(10000);          // 目標金額(万円)
-    const [years, setYears] = React.useState<number>(20);           // あと何年働きたい?
     const [money, setMoney] = React.useState<number>(300);          // 現在の預金額(万円)
     const [value, setValue] = React.useState<number>(500);         // 初期投資額
     const [mu, setMu] = React.useState<number>(0.08);              // リターン
@@ -134,12 +143,15 @@ const App = () => {
             sigma,          // リスク
             money,          // 預金額(万円)
             salary,         // 年収（手取り)
-            years,          // あと何年働くか
             goal,           // 年間投資額(万円)
             emergency,      // 生活防衛費(万円)
             ratio           // 預金の割合
         }));
     }
+    const achievedYearsList = results.map(r => {
+        return r.achievedYears;
+    });
+    const averageAchievedYears = Math.floor(sum(achievedYearsList) / achievedYearsList.length);
     const result = results[0];
     const winRatio = calcWinRatio(results);
     return (
@@ -180,8 +192,6 @@ const App = () => {
                     onChange={e => setGoal(parse(e.target.value))}
                 ></input>万円</span>
             </div>
-
-
             <hr/>
             <div>
                 <span>預金額</span>
@@ -198,18 +208,18 @@ const App = () => {
                 ></input>万円</span>
             </div>
             <div>
-                <span>リターン(年利)</span>
+                <span>リターン</span>
                 <span><input type="text"
                     value={mu}
                     onChange={e => setMu(parseFloat(e.target.value) || 0.0001)}
-                ></input></span>
+                ></input>%</span>
             </div>
             <div>
-                <span>リスク(標準偏差)</span>
+                <span>リスク</span>
                 <span><input type="text"
                     value={sigma}
                     onChange={e => setSigma(parseFloat(e.target.value) || 0.0001)}
-                ></input></span>
+                ></input>%</span>
                 <span>リターンとリスクは『<a href="https://myindex.jp/data_i.php?q=SP1001JPY">myINDEX わたしのインデックス</a>』といった外部サービスを参考に決めてください。</span>
             </div>
             <div>
@@ -224,8 +234,12 @@ const App = () => {
 
             <div>
                 <span>勝率:</span>
-                <span>{Math.floor(100 * winRatio)}%</span>
+                <span style={{color:"red"}}>{Math.floor(100 * winRatio)}%</span>
                 <span>(50年後に資産がマイナスにならない確率)</span>
+            </div>
+            <div>
+                <span>平均目標達成年数:</span>
+                <span>{averageAchievedYears}年</span>
             </div>
             <div>
                 <table>
