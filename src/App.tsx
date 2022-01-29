@@ -1,5 +1,58 @@
 import React from "react";
 
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+  } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+);
+
+export const options = {
+    responsive: true,
+    interaction: {
+      mode: 'index' as const,
+      intersect: false,
+    },
+    stacked: false,
+    plugins: {
+      title: {
+        display: true,
+      },
+    },
+    scales: {
+      y: {
+        type: 'linear' as const,
+        display: true,
+        position: 'left' as const,
+      },
+      y1: {
+        type: 'linear' as const,
+        display: true,
+        position: 'right' as const,
+        grid: {
+          drawOnChartArea: false,
+        },
+      },
+    },
+  };
+  
+
+
 const gauss = function (mu:number, sigma:number) {
     const a = 1 - Math.random();
     const b = 1 - Math.random();
@@ -122,6 +175,14 @@ const sum = (v:number[]) => {
     });
     return res;
 }
+
+const count = (records: number[]) => {
+    let res = Array(51).fill(0);
+    records.map(x => {
+        ++res[x];
+    })
+    return res;
+}
 const App = () => {
     const [age, setAge] = React.useState<number>(25);
     const [expenditure, setExpenditure] = React.useState<number>(250);  // 年間の支出
@@ -152,11 +213,48 @@ const App = () => {
         return r.achievedYears;
     });
     const averageAchievedYears = Math.floor(sum(achievedYearsList) / achievedYearsList.length);
+    
+    
+    
+    
+    
+    
+    
+    const labels = Array(51).fill(0).map((x, i) => {
+        return (i + "年目");
+    });
+    console.log("labels", labels);
+    console.log("data", count(achievedYearsList));
+    const data = {
+      labels,
+      datasets: [
+        {
+          label: '目標達成年数',
+          data: count(achievedYearsList),
+          borderColor: 'rgb(255, 99, 132)',
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+          yAxisID: 'y',
+        },
+      ],
+    };
+    
+    
+    
+    
+    
+    
+    
+    
+    
     const result = results[0];
     const winRatio = calcWinRatio(results);
     return (
         <div>
+
+
+
             <h3>資産運用シミュレーション</h3>
+
             <div>
                 <span>現在の年齢</span>
                 <span><input type="text"
@@ -241,6 +339,7 @@ const App = () => {
                 <span>平均目標達成年数:</span>
                 <span>{averageAchievedYears}年</span>
             </div>
+            <Line options={options} data={data} />
             <div>
                 <table>
                     <thead>
