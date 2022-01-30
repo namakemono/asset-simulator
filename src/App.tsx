@@ -190,10 +190,10 @@ const App = () => {
     const [goal, setGoal] = React.useState<number>(10000);          // 目標金額(万円)
     const [money, setMoney] = React.useState<number>(300);          // 現在の預金額(万円)
     const [value, setValue] = React.useState<number>(500);         // 初期投資額
-    const [mu, setMu] = React.useState<number>(0.08);              // リターン
+    const [mu, setMu] = React.useState<number>(0.082);              // リターン
     const [sigma, setSigma] = React.useState<number>(0.18);         // リスク
     const [emergency, setEmergency] = React.useState<number>(300);  // 生活防衛資金(万円)
-    const [ratio, setRatio] = React.useState<number>(0.2);          // 預金の割合
+    const [ratio, setRatio] = React.useState<number>(0.20);          // 預金の割合
     let results = [];
     for (let k = 0; k < 1000; ++k) {
         results.push(simulate({
@@ -257,28 +257,28 @@ const App = () => {
 
             <div>
                 <span>現在の年齢</span>
-                <span><input type="text"
+                <span><input type="number"
                     value={age}
                     onChange={e => setAge(parse(e.target.value))}
                 ></input>歳</span>
             </div>
             <div>
                 <span>年間の支出</span>
-                <span><input type="text"
+                <span><input type="number"
                     value={expenditure}
                     onChange={e => setExpenditure(parse(e.target.value))}
                 ></input>万円</span>
             </div>
             <div>
                 <span>年収(手取り)</span>
-                <span><input type="text"
+                <span><input type="number"
                     value={salary}
                     onChange={e => setSalary(parse(e.target.value))}
                 ></input>万円</span>
             </div>
             <div>
                 <span>生活防衛資金</span>
-                <span><input type="text"
+                <span><input type="number"
                     value={emergency}
                     onChange={e => setEmergency(parse(e.target.value))}
                 ></input>万円</span>
@@ -293,39 +293,39 @@ const App = () => {
             <hr/>
             <div>
                 <span>預金額</span>
-                <span><input type="text"
+                <span><input type="number"
                     value={money}
                     onChange={e => setMoney(parse(e.target.value))}
                 ></input>万円</span>
             </div>
             <div>
                 <span>初期投資額</span>
-                <span><input type="text"
+                <span><input type="number"
                     value={value}
                     onChange={e => setValue(parse(e.target.value))}
                 ></input>万円</span>
             </div>
             <div>
                 <span>リターン</span>
-                <span><input type="text"
-                    value={mu}
-                    onChange={e => setMu(parseFloat(e.target.value) || 0.0001)}
+                <span><input type="number"
+                    value={(100 * mu).toLocaleString('en-us', {minimumFractionDigits: 1})}
+                    onChange={e => setMu(parseFloat(e.target.value) / 100 || 0.0)}
                 ></input>%</span>
             </div>
             <div>
                 <span>リスク</span>
-                <span><input type="text"
-                    value={sigma}
-                    onChange={e => setSigma(parseFloat(e.target.value) || 0.0001)}
+                <span><input type="number"
+                    value={(100 * sigma).toLocaleString('en-us', {minimumFractionDigits: 1})}
+                    onChange={e => setSigma(parseFloat(e.target.value) / 100 || 0.0)}
                 ></input>%</span>
                 <span>リターンとリスクは『<a href="https://myindex.jp/data_i.php?q=SP1001JPY">myINDEX わたしのインデックス</a>』といった外部サービスを参考に決めてください。</span>
             </div>
             <div>
                 <span>預金の割合</span>
-                <span><input type="text"
-                    value={ratio}
-                    onChange={e => setRatio(parseFloat(e.target.value) || 0.0001)}
-                ></input></span>
+                <span><input type="number"
+                    value={(100 * ratio).toLocaleString('en-us', {minimumFractionDigits: 0})}
+                    onChange={e => setRatio(parseFloat(e.target.value) / 100 || 0.0)}
+                ></input>%</span>
             </div>
 
             <hr />
